@@ -10,7 +10,7 @@ A colection of usefull cogs.
 
 ## Cogs
 
-* [Terraria](https://github.com/Limmek/RedBot-Cogs/terraria)
+* [Terraria](https://github.com/Limmek/RedBot-Cogs/tree/master/terraria)
 
 ### Terraria
 

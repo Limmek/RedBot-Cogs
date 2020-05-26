@@ -1,0 +1,11 @@
+{
+    "author": ["Limmek"],
+    "install_msg": "",
+    "name": "terraria",
+    "disabled": false,
+    "short": "",
+    "description": "Terraria cog",
+    "tags": [],
+    "requirements": [],
+    "hidden": false
+}

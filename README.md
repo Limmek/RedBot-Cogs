@@ -1,6 +1,6 @@
 # RedBot-Cogs
 
-A colection of usefull cogs.
+A collection of useful cogs.
 
 ## Installation
 

@@ -93,29 +93,33 @@ class Terraria(commands.Cog):
                 return string
 
             embed = discord.Embed(title="***Terraria Serverinfo***", description="", color=0x006600)
-            
             if len(servers) >= 1 or servers != None:
                 for server in servers:
-                    data = await self.http("http://%s/v2/server/status?players=true" % (server))
-                    if int(data.get('status')) == 200:
-                        embed.add_field(name=title(data), value=description(data, server), inline=True)
-                
+                    try:
+                        data = await self.http("http://%s/v2/server/status?players=true" % (server))
+                        if int(data.get('status')) == 200:
+                            embed.add_field(name=title(data), value=description(data, server), inline=True)
+                    except:
+                        pass
+                    
             embed.set_footer(text="Last updated %s" % (datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
             try:
                 await message.edit(content="", embed=embed)
             except:
                 await message.send(content="", embed=embed)
                 pass
         
+        await self.bot.wait_until_ready()
         try:
-            await self.bot.wait_until_ready()
             await serverinfo(self)
             while await asyncio.sleep(await self.config.update_interval() , True):
                 await serverinfo(self)
-        
+
         except Exception as exc:
             log.exception("Unexpected exception in background task ", exc_info=exc)
-            
+            pass
+        
     @commands.group(aliases=['ter'])
     async def terraria(self, ctx: commands.GuildContext):
         """

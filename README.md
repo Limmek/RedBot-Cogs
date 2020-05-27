@@ -24,5 +24,4 @@ Works with localy and public servers as long it meet the requirements.
 * ``[p] terraria server setchannel [channel]`` - Set channel to display the serverinfo
 * ``[p] terraria server add <addr>`` - Add a server to the serverinfo. ``<server-ip/:rest-port>``.
 * ``[p] terraria server remove <addr>`` - Remove a server from the serverinfo.
-* ``[p] terraria server setmessage [message] - Set a existing message to display the serverinfo
-​
+* ``[p] terraria server setmessage [message] - Set a existing message to display the serverinfo``

@@ -1,11 +1,9 @@
 import asyncio
 import re
-from datetime import datetime, time
-
+from datetime import datetime
 import aiohttp
 import discord
-import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional
 from aiohttp import ClientSession
 from redbot.core import checks, commands
 from redbot.core.config import Config
@@ -201,3 +199,19 @@ class Terraria(commands.Cog):
 
         message = await channel.send(content="***Terraria Serverinfo***")
         await self.config.message_id.set(message.id)
+
+    @server.command(pass_context=True)
+    async def setmessage(self, ctx:commands.GuildContext, message:Optional[discord.Message]):
+        """
+        Set a existing message to display the serverinfo
+        """
+        message_id = await self.config.message_id()
+        if message == None:
+            return await ctx.send("You must provide a message id from this server.")
+        
+        if message == message_id:
+            return await ctx.send("That message is already in use.")
+
+        await  self.config.channel_id.set(message.channel.id)
+        await  self.config.message_id.set(message.id)
+        await ctx.send("Mesasge is set to {}.".format(message.id))

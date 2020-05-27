@@ -6,6 +6,7 @@ A collection of useful cogs.
 
 1. ``[p]repo add RedBot-Cogs https://github.com/Limmek/RedBot-Cogs``
 2. ``[p]cog install RedBot-Cogs <cog-name>``
+
 *Note **``[p]``** is your prefix.*
 
 ## Cogs

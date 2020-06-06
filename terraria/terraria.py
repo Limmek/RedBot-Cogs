@@ -14,7 +14,7 @@ class Terraria(commands.Cog):
     """
 
     __author__ = "Limmek"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
@@ -61,7 +61,7 @@ class Terraria(commands.Cog):
             if int(port) == int(x[1]):
                 return server
         return False
-        
+    
     async def http(self, url):
         async with ClientSession() as session:
             async with session.get(url) as response:
@@ -145,7 +145,6 @@ class Terraria(commands.Cog):
         await ctx.send(content="```%s```" % ("\n".join(servers)))
     
     @terraria.group(aliases=[])
-    @checks.is_owner()
     async def server(self, ctx: commands.GuildContext):
         """
         TShock REST API server commands.
@@ -158,15 +157,19 @@ class Terraria(commands.Cog):
         """
         Turn the server off using TShock REST API.
         """
+        token = await self.config.token()
         addr = await self.check_server(port)
         if addr:
-            token = await self.config.token()
-            response = await self.http("http://%s/v2/server/off?confirm=%s&token=%s" % (addr, str(confirm), token))
-            if response.get('response'):
-                message = response.get('response')
-            else:
-                message = response.get('error')
-            return await ctx.send(message)
+            users = await self.http("http://%s/v2/users/list?token=%s" % (addr, token))
+            for user in users.get("users"):
+                if user.get("name") == ctx.message.author.name.lower() and user.get("group") in ["owner", "superadmin"]:
+                    response = await self.http("http://%s/v2/server/off?confirm=%s&token=%s" % (addr, str(confirm), token))
+                    if response.get('response'):
+                        message = response.get('response')
+                    else:
+                        message = response.get('error')
+                    return await ctx.send(message)
+            return await ctx.send("No permission")
         await ctx.send("No server with port %s." % (port))
 
     @terraria.group(aliases=[])

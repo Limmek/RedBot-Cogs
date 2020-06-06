@@ -14,7 +14,7 @@ class Terraria(commands.Cog):
     """
 
     __author__ = "Limmek"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
@@ -28,6 +28,7 @@ class Terraria(commands.Cog):
             update_interval = 10,
             channel_id = None,
             message_id = None,
+            token = "",
             servers = []
         )
         self.bg_loop_task: Optional[asyncio.Task] = None
@@ -53,6 +54,14 @@ class Terraria(commands.Cog):
         if self.bg_loop_task:
             self.bg_loop_task.cancel()
 
+    async def check_server(self, port, spliter="/"):
+        servers = await self.config.servers()
+        for server in servers:
+            x = server.split(spliter)
+            if int(port) == int(x[1]):
+                return server
+        return False
+        
     async def http(self, url):
         async with ClientSession() as session:
             async with session.get(url) as response:
@@ -135,19 +144,56 @@ class Terraria(commands.Cog):
         servers = await self.config.servers()
         await ctx.send(content="```%s```" % ("\n".join(servers)))
     
-
     @terraria.group(aliases=[])
     @checks.is_owner()
     async def server(self, ctx: commands.GuildContext):
         """
-        Server configuration for the server information mesasge.
+        TShock REST API server commands.
+        Note: a Token must be set to use this commands.
+        """
+        pass
+
+    @server.command()
+    async def off(self, ctx, port:int, confirm:bool = True):        
+        """
+        Turn the server off using TShock REST API.
+        """
+        addr = await self.check_server(port)
+        if addr:
+            token = await self.config.token()
+            response = await self.http("http://%s/v2/server/off?confirm=%s&token=%s" % (addr, str(confirm), token))
+            if response.get('response'):
+                message = response.get('response')
+            else:
+                message = response.get('error')
+            return await ctx.send(message)
+        await ctx.send("No server with port %s." % (port))
+
+    @terraria.group(aliases=[])
+    @checks.is_owner()
+    async def settings(self, ctx: commands.GuildContext):
+        """
+        Server configuration for the server information message.
         """
         pass
     
-    @server.command()
+    @settings.command()
+    async def token(self, ctx, new_token:str):
+        """
+        Set token to use TShock REST API message.
+        """
+        token = await self.config.token()
+        
+        if new_token == token:
+            return await ctx.send("The update interval is already set to %s" % (token))
+
+        await self.config.token.set(new_token)
+        await ctx.send("The new TOKEN is %s." % (new_token))
+
+    @settings.command()
     async def interval(self, ctx, seconds:int):
         """
-        Set how often the serverinfo mesasge shall be updated.
+        Set how often the serverinfo message shall be updated.
         """
         update_interval = await self.config.update_interval()
         
@@ -158,7 +204,7 @@ class Terraria(commands.Cog):
         await ctx.send("The new update interval is %s.\nRequires a reload! ```[p]reload terraria``` " % (seconds))
 
 
-    @server.command()
+    @settings.command()
     async def add(self, ctx, addr):
         """
         Add a server to the serverinfo. <server-ip/:rest-port>
@@ -174,7 +220,7 @@ class Terraria(commands.Cog):
                     return await ctx.send("```%s``` has been added!" % (addr))
                 await ctx.send("That name is already in use.")
                 
-    @server.command()
+    @settings.command()
     async def remove(self, ctx, addr):
         """
         Remove a server from the serverinfo.
@@ -186,7 +232,7 @@ class Terraria(commands.Cog):
                 return await ctx.send("```%s``` has been removed!" % (addr))
             await ctx.send("Server not found")
     
-    @server.command(pass_context=True)
+    @settings.command(pass_context=True)
     async def setchannel(self, ctx:commands.GuildContext, channel:Optional[discord.TextChannel] = None):
         """
         Set channel to display the serverinfo
@@ -204,7 +250,7 @@ class Terraria(commands.Cog):
         message = await channel.send(content="***Terraria Serverinfo***")
         await self.config.message_id.set(message.id)
 
-    @server.command(pass_context=True)
+    @settings.command(pass_context=True)
     async def setmessage(self, ctx:commands.GuildContext, message:Optional[discord.Message]):
         """
         Set a existing message to display the serverinfo
@@ -218,4 +264,4 @@ class Terraria(commands.Cog):
 
         await  self.config.channel_id.set(message.channel.id)
         await  self.config.message_id.set(message.id)
-        await ctx.send("Mesasge is set to {}.".format(message.id))
+        await ctx.send("message is set to {}.".format(message.id))

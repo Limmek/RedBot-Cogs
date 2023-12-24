@@ -53,7 +53,7 @@ class Freegames(commands.Cog):
                     "We somehow have a done callback when not done?", exc_info=exception
                 )
             except Exception as exception:
-                self.log.exception("Unexpected exception in rss: ", exc_info=exception)
+                self.log.exception("Unexpected exception in freegames: ", exc_info=exception)
 
         self.bg_loop_task.add_done_callback(done_callback)
 

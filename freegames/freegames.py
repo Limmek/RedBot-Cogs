@@ -184,7 +184,7 @@ class Freegames(commands.Cog):
                             if game["description"] != "":
                                 description += f"*{game['description']}*\n"
 
-                            if game["expiryDate"] != "null":
+                            if game["expiryDate"] != None:
                                 expiry_date = datetime.fromisoformat(
                                     str(game["expiryDate"])
                                 )

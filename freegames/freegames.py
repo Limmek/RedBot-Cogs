@@ -53,7 +53,9 @@ class Freegames(commands.Cog):
                     "We somehow have a done callback when not done?", exc_info=exception
                 )
             except Exception as exception:
-                self.log.exception("Unexpected exception in freegames: ", exc_info=exception)
+                self.log.exception(
+                    "Unexpected exception in freegames: ", exc_info=exception
+                )
 
         self.bg_loop_task.add_done_callback(done_callback)
 
@@ -178,14 +180,20 @@ class Freegames(commands.Cog):
                             self.log.info(f"New Game Found: {game['title']}")
                             await self._saveData("EpicGames", game["title"])
 
-                            expiry_date = datetime.fromisoformat(game["expiryDate"])
-                            country_timezones = pytz.country_timezones
-                            if country_code in country_timezones:
-                                country_timezone = pytz.timezone(
-                                    country_timezones[country_code][0]
-                                )
-                                expiry_date = expiry_date.astimezone(country_timezone)
-                            formatted_date = expiry_date.strftime("%Y-%m-%d %H:%M")
+                            if isinstance(game["expiryDate"], str):
+                                expiry_date = datetime.fromisoformat(game["expiryDate"])
+                                country_timezones = pytz.country_timezones
+                                if country_code in country_timezones:
+                                    country_timezone = pytz.timezone(
+                                        country_timezones[country_code][0]
+                                    )
+                                    expiry_date = expiry_date.astimezone(
+                                        country_timezone
+                                    )
+                                formatted_date = expiry_date.strftime("%Y-%m-%d %H:%M")
+                            else:
+                                formatted_date = ""
+
                             embed = discord.Embed(
                                 title=f"{game['title']}",
                                 description=f"Free now att **Epic Games Store.**\nOffer ends: **{formatted_date}**.",

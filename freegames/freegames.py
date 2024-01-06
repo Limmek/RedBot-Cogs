@@ -180,8 +180,13 @@ class Freegames(commands.Cog):
                             self.log.info(f"New Game Found: {game['title']}")
                             await self._saveData("EpicGames", game["title"])
 
-                            if isinstance(game["expiryDate"], str):
-                                expiry_date = datetime.fromisoformat(game["expiryDate"])
+                            if (
+                                isinstance(game["expiryDate"], str)
+                                and game["expiryDate"] != "null"
+                            ):
+                                expiry_date = datetime.fromisoformat(
+                                    str(game["expiryDate"])
+                                )
                                 country_timezones = pytz.country_timezones
                                 if country_code in country_timezones:
                                     country_timezone = pytz.timezone(

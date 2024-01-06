@@ -180,6 +180,13 @@ class Freegames(commands.Cog):
                             self.log.info(f"New Game Found: {game['title']}")
                             await self._saveData("EpicGames", game["title"])
 
+                            description = f"Free now att **Epic Games Store.**\n"
+                            if (
+                                isinstance(game["description"], str)
+                                and game["description"] != ""
+                            ):
+                                description += f"*{game['description']}*\n"
+
                             if (
                                 isinstance(game["expiryDate"], str)
                                 and game["expiryDate"] != "null"
@@ -195,13 +202,11 @@ class Freegames(commands.Cog):
                                     expiry_date = expiry_date.astimezone(
                                         country_timezone
                                     )
-                                formatted_date = expiry_date.strftime("%Y-%m-%d %H:%M")
-                            else:
-                                formatted_date = ""
+                                description += f"Offer ends: **{expiry_date.strftime('%Y-%m-%d %H:%M')}\n"
 
                             embed = discord.Embed(
                                 title=f"{game['title']}",
-                                description=f"Free now att **Epic Games Store.**\nOffer ends: **{formatted_date}**.",
+                                description=description,
                                 color=0x000000,
                             )
                             embed.set_image(url=game["keyImages"][0]["url"])

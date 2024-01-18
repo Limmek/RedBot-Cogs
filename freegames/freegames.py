@@ -5,7 +5,7 @@ import logging
 import json
 import os
 import pytz
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from redbot.core import commands
@@ -170,33 +170,55 @@ class Freegames(commands.Cog):
                     f"https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions?locale={country_code.lower()}&country={country_code.upper()}"
                 )
                 if response:
-                    # self.log.debug(f"Requested Data: {response}")
+                    self.log.debug(f"Requested Data: {response}")
                     for game in response["data"]["Catalog"]["searchStore"]["elements"]:
                         if (
-                            not os.path.exists(self.data_path)
-                            or not game["title"] in self.data["EpicGames"]
+                            not game["title"] in self.data["EpicGames"]
                             and not "Mystery Game" in game["title"]
                         ):
                             self.log.info(f"New Game Found: {game['title']}")
                             await self._saveData("EpicGames", game["title"])
 
-                            description = f"Free now att **Epic Games Store.**\n"
+                            description = ""
                             if game["description"] != "":
-                                description += f"*{game['description']}*\n"
+                                description = f"*{game['description']}*\n\n"
 
-                            if game["expiryDate"] != None:
-                                expiry_date = datetime.fromisoformat(
-                                    str(game["expiryDate"])
+                            if game["promotions"]:
+                                promotional_offers = game["promotions"].get(
+                                    "promotionalOffers", []
+                                ) or game["promotions"].get(
+                                    "upcomingPromotionalOffers", []
                                 )
-                                country_timezones = pytz.country_timezones
-                                if country_code in country_timezones:
-                                    country_timezone = pytz.timezone(
-                                        country_timezones[country_code][0]
-                                    )
-                                    expiry_date = expiry_date.astimezone(
-                                        country_timezone
-                                    )
-                                description += f"Offer ends: **{expiry_date.strftime('%Y-%m-%d %H:%M')}**\n"
+                                for promotional_offer in promotional_offers:
+                                    for offer in promotional_offer.get(
+                                        "promotionalOffers", []
+                                    ):
+                                        start_date = datetime.fromisoformat(
+                                            offer.get("startDate")
+                                        )
+                                        end_date = datetime.fromisoformat(
+                                            offer.get("endDate")
+                                        )
+                                        country_timezones = pytz.country_timezones
+                                        if country_code in country_timezones:
+                                            country_timezone = pytz.timezone(
+                                                country_timezones[country_code][0]
+                                            )
+                                            start_date = start_date.astimezone(
+                                                country_timezone
+                                            )
+                                            end_date = end_date.astimezone(
+                                                country_timezone
+                                            )
+                                        if (
+                                            start_date
+                                            and end_date
+                                            and datetime.now(country_timezone)
+                                            > start_date
+                                        ):
+                                            description += f"**FREE** until *{end_date.strftime('%Y-%m-%d %H:%M')}*\n"
+                                        else:
+                                            description += f"Available for free between\n *{start_date.strftime('%Y-%m-%d %H:%M')}* and *{end_date.strftime('%Y-%m-%d %H:%M')}*\n"
 
                             embed = discord.Embed(
                                 title=f"{game['title']}",
